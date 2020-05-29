@@ -128,3 +128,19 @@ services:
         - 2375
       networks:
         - backend
+
+
+### Database refresher microservice #################################
+    database-refresher:
+      env_file:
+        - ${APP_CODE_PATH_HOST}/.env
+      environment:
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      build:
+        context: ./database-refresher-microservice
+      depends_on:
+        - mysql
+      networks:
+        - backend
+      links:
+        - mysql
