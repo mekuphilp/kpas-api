@@ -1,33 +1,25 @@
-from sqlalchemy import create_engine
-from sqlalchemy_utils import database_exists, create_database
-
-from src.api_client import ApiClient
-from src.db_client import DatabaseClient
-from src.definitions import DB_USERNAME, DB_PASSWORD, DB_HOST, DB_PORT, Base, DB_DATABASE, MYSQL_ROOT_PASSWORD
 import logging
 import sys
 
+from statistics_api.api_client import ApiClient
+from statistics_api.db_client import DatabaseClient
+from statistics_api.models.course import Course
+from statistics_api.models.group import Group
+from statistics_api.models.group_category import GroupCategory
+from django.db import transaction
 
+
+@transaction.atomic
 def refresh_database():
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     logger = logging.getLogger()
 
-    db_root_url = f"mysql+mysqlconnector://root:{MYSQL_ROOT_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
-    db_url = f"mysql+mysqlconnector://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
-
-    if not database_exists(db_root_url):
-        create_database(db_root_url)
-
-    root_engine = create_engine(db_root_url)
-    with root_engine.connect() as conn:
-        conn.execute(f"GRANT CREATE, SELECT, INSERT, DELETE ON {DB_DATABASE}.* TO '{DB_USERNAME}';")
-
-    engine = create_engine(db_url)
-    Base.metadata.create_all(engine)
-
     api_client = ApiClient()
-    db_client = DatabaseClient(engine)
-    db_client.truncate_database()
+    db_client = DatabaseClient()
+
+    for existing_table in [Course.objects.all(), GroupCategory.objects.all(), Group.objects.all()]:
+        existing_table.delete()
+
     logger.info("Truncated database")
 
     courses = api_client.get_courses()
@@ -57,5 +49,3 @@ def refresh_database():
 
     db_client.insert_groups(all_groups)
     logger.info(f"Inserted {len(all_groups)} groups")
-
-    db_client.commit_session()
