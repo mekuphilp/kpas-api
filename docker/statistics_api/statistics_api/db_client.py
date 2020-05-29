@@ -17,7 +17,8 @@ class DatabaseClient:
 
     def insert_group_categories(self, group_categories: List):
         for group_category in group_categories:
-            db_group_category = GroupCategory(name=group_category['name'], course_id=group_category['course_id'])
+            db_group_category = GroupCategory(canvas_id=group_category['id'], name=group_category['name'],
+                                              course_id=group_category['course_id'])
             db_group_category.save()
             group_category['db_id'] = db_group_category.pk
         return group_categories
@@ -35,4 +36,3 @@ class DatabaseClient:
                            description=group['description'], members_count=group['members_count']) for group in groups]
         Group.objects.bulk_create(db_groups)
         a = 0
-

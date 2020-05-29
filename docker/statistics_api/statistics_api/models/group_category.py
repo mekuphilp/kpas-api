@@ -7,6 +7,7 @@ from statistics_api.models.course import Course
 
 class GroupCategory(BaseModel):
     name = models.CharField(max_length=MYSQL_VARCHAR_DEFAULT_LENGTH)
+    canvas_id = models.IntegerField()
     course = models.ForeignKey(Course, on_delete=models.CASCADE)  # course_id
 
     class Meta:
