@@ -25,8 +25,8 @@ services:
         - 4430:443
 
 
-### Database refresher microservice #################################
-    database-refresher:
+### Statistics API #######################################
+    statistics_api:
       environment:
         - CA_FILE_NAME=ca.crt
       networks:
